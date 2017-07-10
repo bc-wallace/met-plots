@@ -1,8 +1,3 @@
-
-# coding: utf-8
-
-# In[1]:
-
 import os
 import numpy as np
 import pandas as pd
@@ -12,9 +7,6 @@ import matplotlib
 from datetime import datetime, timedelta
 from mpl_toolkits.basemap import Basemap
 
-
-# In[2]:
-
 #enter various info
 #use a for loop if you want to use multiple stations
 days=5
@@ -22,9 +14,6 @@ day1='10'
 day2='15'
 station='KMLB'
 startdate='20160510'
-
-
-# In[3]:
 
 #converts nonreadable data into nan
 def s2f(csv_file):
@@ -44,22 +33,15 @@ def etime(startdate,days):
         date+=timedelta(minutes=1)
     return str_time
 
-
-# In[4]:
-
 path_6406='ftp://ftp.ncdc.noaa.gov/pub/data/asos-onemin/6406-2016/64060'+station+'201605.dat'
 
 #this path leads to other data like humidity etc
 #path_6405='ftp://ftp.ncdc.noaa.gov/pub/data/asos-onemin/6405-2016/64050KVRB201605.dat'
 
 
-# In[5]:
-
 #assign random placeholder for name 
 file_6406=pd.read_csv(path_6406,names='t')
 
-
-# In[6]:
 
 station=file_6406['t'][0][5:9]
 day=[]
@@ -70,8 +52,6 @@ pres3=[]
 tmpf=[]
 dwpf=[]
 
-
-# In[7]:
 
 #pull in character position of relevant data
 #crude workaround the inconsistent nature of the data 
@@ -88,8 +68,6 @@ for row in enumerate(file_6406['t']):
     dwpf.append(file_6406['t'][x][100:102])
 
 
-# In[8]:
-
 #finding endpoints within data that correspond to start day and stop day
 #recommended that day1 and day2 be different days
 for val in enumerate(day):
@@ -102,8 +80,6 @@ for val in enumerate(day):
         break
 
 
-# In[9]:
-
 day=s2f(np.array(day[st:en]))
 time=np.array(time[st:en])
 pres1=np.array(s2f(pres1[st:en]))
@@ -113,19 +89,13 @@ tmpf=np.array(s2f(tmpf[st:en]))
 dwpf=np.array(s2f(dwpf[st:en]))
 
 
-# In[10]:
-
 #averaging the 3 pressure readings and converting to hPa
 #why is this in inches to begin with?
 pres=((pres1+pres2+pres3)/3)*33.8639
 
 
-# In[11]:
-
 full_time=etime(startdate,days)
 
-
-# In[12]:
 
 y=0
 
@@ -150,8 +120,6 @@ for x in range(len(full_time)):
         mdwpf[x]=float('NaN')
         #print 'Not Equal!'
 
-
-# In[13]:
 
 fig,ax=plt.subplots(2,1)
 fig.set_figheight(12)
@@ -200,9 +168,3 @@ ax[1].grid()
 
 plt.show()
 plt.close()
-
-
-# In[ ]:
-
-
-
