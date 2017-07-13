@@ -1,3 +1,9 @@
+#####################################################################################################
+### IMPORTANT!!! ###
+### WHEN SELECTING START DATE, IT MUST BE A DATE WITH AT LEAST ONE ENTRY IN THE NCEI ARCHIVE ###
+#####################################################################################################
+
+
 
 import os
 import sys
@@ -179,7 +185,7 @@ ax[0].set_xticklabels([])
 ax[0].set_title(station,fontsize=30)
 ax[0].grid()
 
-ax[1].plot(np.arange(0,len(full_time),1),mpres,'ko',linewidth=2)
+ax[1].plot(np.arange(0,len(full_time),1),mpres,'k',linewidth=2)
 for i in range(0,len(start_day),2):
     ax[1].axvspan(start_day[i],end_day[i],color='#CECECE')
 ax[1].set_xlim(0,len(full_time)-1)
