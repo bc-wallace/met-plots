@@ -13,14 +13,14 @@ import time
 #enter various info
 #use a for loop if you want to use multiple stations
 #station should be three digit code with 'K' in front
-#startdate and enddate should be in format YYYYMMDD HH:MM
+#startdate and enddate should be in format YYYYMMDD_HH:MM
 args=sys.argv
 station=args[1]
 startdate=args[2]
 enddate=args[3]
 
-startdate=datetime.strptime(startdate,'%Y%m%d %H:%M')
-enddate=datetime.strptime(enddate,'%Y%m%d %H:%M')
+startdate=datetime.strptime(startdate,'%Y%m%d_%H:%M')
+enddate=datetime.strptime(enddate,'%Y%m%d_%H:%M')
 
 day1=startdate.day
 day2=enddate.day
