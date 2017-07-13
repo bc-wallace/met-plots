@@ -1,4 +1,6 @@
+
 import os
+import sys
 import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
@@ -6,25 +8,40 @@ import matplotlib.ticker as plticker
 import matplotlib
 from datetime import datetime, timedelta
 from mpl_toolkits.basemap import Basemap
+import time
 
 #enter various info
 #use a for loop if you want to use multiple stations
-days=5
-day1='10'
-day2='15'
-station='KMLB'
-startdate='20160510'
+#station should be three digit code with 'K' in front
+#startdate and enddate should be in format YYYYMMDD HH:MM
+args=sys.argv
+station=args[1]
+startdate=args[2]
+enddate=args[3]
+
+startdate=datetime.strptime(startdate,'%Y%m%d %H:%M')
+enddate=datetime.strptime(enddate,'%Y%m%d %H:%M')
+
+day1=startdate.day
+day2=enddate.day
+month='0'+str(startdate.month) if startdate.month<10 else str(startdate.month)
+
+d1_ts=time.mktime(startdate.timetuple())
+d2_ts=time.mktime(enddate.timetuple())
+
+minutes=int(d2_ts-d1_ts)/60
+day_diff=np.abs((enddate-startdate).days)
 
 #converts nonreadable data into nan
 def s2f(csv_file):
         return [float('NaN') if 'M' in x else float(x) for x in csv_file]
 
-#startdate MUST be in YYYYMMDD!
+#startdate MUST be in YYYYMMDDHH:MM!
 #this time creates a uniform 1 minute array across a specified length of time
 #useful for plotting
-def etime(startdate,days):
-    date=datetime.strptime(startdate,'%Y%m%d')
-    str_time=np.zeros(1440*days)
+def etime(startdate,minutes):
+    date=startdate
+    str_time=np.zeros(minutes)
     for x in range(len(str_time)):
         minute='0'+str(date.minute) if date.minute<10 else str(date.minute)
         hour='0'+str(date.hour) if date.hour<10 else str(date.hour)
@@ -33,9 +50,10 @@ def etime(startdate,days):
         date+=timedelta(minutes=1)
     return str_time
 
-path_6406='ftp://ftp.ncdc.noaa.gov/pub/data/asos-onemin/6406-2016/64060'+station+'201605.dat'
+path_6406='ftp://ftp.ncdc.noaa.gov/pub/data/asos-onemin/6406-2016/64060'+station+'2016'+month+'.dat'
 
 #this path leads to other data like humidity etc
+#don't really use it for now
 #path_6405='ftp://ftp.ncdc.noaa.gov/pub/data/asos-onemin/6405-2016/64050KVRB201605.dat'
 
 
@@ -71,11 +89,11 @@ for row in enumerate(file_6406['t']):
 #finding endpoints within data that correspond to start day and stop day
 #recommended that day1 and day2 be different days
 for val in enumerate(day):
-    if val[1]==day1:
+    if val[1]==str(day1):
         st=val[0]
         break
 for val in enumerate(day):
-    if val[1]==day2:
+    if val[1]==str(day2):
         en=val[0]
         break
 
@@ -94,7 +112,7 @@ dwpf=np.array(s2f(dwpf[st:en]))
 pres=((pres1+pres2+pres3)/3)*33.8639
 
 
-full_time=etime(startdate,days)
+full_time=etime(startdate,minutes)
 
 
 y=0
@@ -104,6 +122,11 @@ mtmpf=np.zeros(len(full_time))
 mdwpf=np.zeros(len(full_time))
 
 for x in range(len(full_time)):
+    if y>=len(time):
+        mpres[x:]=float('NaN')
+        mtmpf[x:]=float('NaN')
+        mdwpf[x:]=float('NaN')
+        break
     if y>1:
         if time[y]==time[y-1]:
             #print 'Discontinuity Error! \n Fixing.....'
@@ -128,11 +151,14 @@ array_pos=0
 start_day=[0,]
 end_day=[]
 
-tick_interval=4*days
+tick_interval=int(minutes/60) if minutes<=4320 else day_diff*4
 base=len(full_time)/tick_interval
 if base==0:
     print 'Not enough times'
-labels=full_time[0::base]
+full_lab=[]
+for d in range(len(full_time)):
+    full_lab.append('2016-'+str(full_time[d])[:2]+'-'+str(full_time[d])[2:6])
+labels=full_lab[0::base]
 labels=np.insert(labels,0,0)
 loc=plticker.MultipleLocator(base=base)
 y_formatter=matplotlib.ticker.ScalarFormatter(useOffset=False)
@@ -150,9 +176,10 @@ for i in range(0,len(start_day),2):
     ax[0].axvspan(start_day[i],end_day[i],color='#CECECE')
 ax[0].set_xlim(0,len(full_time)-1)
 ax[0].set_xticklabels([])
+ax[0].set_title(station,fontsize=30)
 ax[0].grid()
 
-ax[1].plot(np.arange(0,len(full_time),1),mpres,'k',linewidth=2)
+ax[1].plot(np.arange(0,len(full_time),1),mpres,'ko',linewidth=2)
 for i in range(0,len(start_day),2):
     ax[1].axvspan(start_day[i],end_day[i],color='#CECECE')
 ax[1].set_xlim(0,len(full_time)-1)
@@ -166,5 +193,6 @@ ax[1].set_xticklabels(labels,rotation='90')
 ax[1].set_xlim(0,len(full_time)-1)
 ax[1].grid()
 
+plt.tight_layout()
 plt.show()
 plt.close()
