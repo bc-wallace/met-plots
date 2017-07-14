@@ -94,10 +94,22 @@ for row in enumerate(file_6406['t']):
 
 #finding endpoints within data that correspond to start day and stop day
 #recommended that day1 and day2 be different days
+
+loopdate=startdate
+while str(day1) not in day:
+        loopdate=(loopdate-timedelta(days=1))
+        day1=loopdate.day
+        
 for val in enumerate(day):
     if val[1]==str(day1):
         st=val[0]
         break
+
+loopdate=enddate
+while str(day2) not in day:
+        loopdate=(loopdate+timedelta(days=1))
+        day2=loopdate.day
+        
 for val in enumerate(day):
     if val[1]==str(day2):
         en=val[0]
