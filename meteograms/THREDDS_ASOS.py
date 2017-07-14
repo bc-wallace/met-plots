@@ -29,7 +29,7 @@ startdate=datetime.strptime(startdate,'%Y%m%d_%H:%M')
 enddate=datetime.strptime(enddate,'%Y%m%d_%H:%M')
 
 day1=startdate.day
-day2=enddate.day
+day2=(enddate+timedelta(days=1)).day
 month='0'+str(startdate.month) if startdate.month<10 else str(startdate.month)
 
 d1_ts=time.mktime(startdate.timetuple())
