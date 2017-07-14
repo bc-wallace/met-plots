@@ -127,6 +127,14 @@ mpres=np.zeros(len(full_time))
 mtmpf=np.zeros(len(full_time))
 mdwpf=np.zeros(len(full_time))
 
+#if the starting point in the THREDDS data is not in the full_time array, this will allow it to continue until it finds
+#a value that is
+for place_val in range(len(day)):
+    if float(str(int(day[y]))+time[y]) not in full_time:
+        y+=1
+    else:
+        break
+
 for x in range(len(full_time)):
     if y>=len(time):
         mpres[x:]=float('NaN')
