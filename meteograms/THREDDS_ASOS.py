@@ -28,8 +28,8 @@ enddate=args[3]
 startdate=datetime.strptime(startdate,'%Y%m%d_%H:%M')
 enddate=datetime.strptime(enddate,'%Y%m%d_%H:%M')
 
-day1=startdate.day
-day2=(enddate+timedelta(days=1)).day
+day1='0'+str(startdate.day) if startdate.day<10 else str(startdate.day)
+day2='0'+str((enddate+timedelta(days=1)).day) if (enddate+timedelta(days=1)).day<10 else str((enddate+timedelta(days=1)).day)
 month='0'+str(startdate.month) if startdate.month<10 else str(startdate.month)
 
 d1_ts=time.mktime(startdate.timetuple())
@@ -47,12 +47,12 @@ def s2f(csv_file):
 #useful for plotting
 def etime(startdate,minutes):
     date=startdate
-    str_time=np.zeros(minutes)
-    for x in range(len(str_time)):
+    str_time=[]
+    for x in range(minutes):
         minute='0'+str(date.minute) if date.minute<10 else str(date.minute)
         hour='0'+str(date.hour) if date.hour<10 else str(date.hour)
-        day=str(date.day)
-        str_time[x]=day+hour+minute
+        day='0'+str(date.day) if date.day<10 else str(date.day)
+        str_time.append(day+hour+minute)
         date+=timedelta(minutes=1)
     return str_time
 
@@ -142,7 +142,8 @@ mdwpf=np.zeros(len(full_time))
 #if the starting point in the THREDDS data is not in the full_time array, this will allow it to continue until it finds
 #a value that is
 for place_val in range(len(day)):
-    if float(str(int(day[y]))+time[y]) not in full_time:
+    loop_day='0'+str(int(day[y])) if int(day[y])<10 else str(int(day[y]))
+    if loop_day+time[y] not in full_time:
         y+=1
     else:
         break
@@ -174,10 +175,17 @@ fig,ax=plt.subplots(2,1)
 fig.set_figheight(12)
 fig.set_figwidth(14)
 array_pos=0
-start_day=[0,]
+start_day=[]
 end_day=[]
 
-tick_interval=int(minutes/60) if minutes<=4320 else day_diff*4
+if day_diff<=7:
+    tick_interval=day_diff*4
+if minutes<=2880:
+    tick_interval=int(minutes/60)
+if day_diff<=18:
+    tick_interval=day_diff*2
+if day_diff>18:
+    tick_interval=day_diff
 base=len(full_time)/tick_interval
 if base==0:
     print 'Not enough times'
@@ -191,21 +199,24 @@ y_formatter=matplotlib.ticker.ScalarFormatter(useOffset=False)
 
 for x in range(1,len(full_time)):
     if str(full_time[x])[:2] > str(full_time[x-1])[:2]:
-        end_day.append(array_pos)
         start_day.append(array_pos+1)
+        if len(start_day)==1:
+            continue
+        end_day.append(array_pos)
     array_pos+=1
 end_day.append(len(full_time))
 
-ax[0].plot(np.arange(0,len(full_time),1),mtmpf,'b',linewidth=2)
-ax[0].plot(np.arange(0,len(full_time),1),mdwpf,'r',linewidth=2)
+tplot=ax[0].plot(np.arange(0,len(full_time),1),mtmpf,'b',linewidth=2,label='Temperature (F)')
+dplot=ax[0].plot(np.arange(0,len(full_time),1),mdwpf,'r',linewidth=2,label='Dewpoint (F)')
 for i in range(0,len(start_day),2):
     ax[0].axvspan(start_day[i],end_day[i],color='#CECECE')
 ax[0].set_xlim(0,len(full_time)-1)
 ax[0].set_xticklabels([])
 ax[0].set_title(station,fontsize=30)
+ax[0].legend(prop={'size':20})
 ax[0].grid()
 
-ax[1].plot(np.arange(0,len(full_time),1),mpres,'k',linewidth=2)
+ax[1].plot(np.arange(0,len(full_time),1),mpres,'k',linewidth=2,label='MSLP (hPa)')
 for i in range(0,len(start_day),2):
     ax[1].axvspan(start_day[i],end_day[i],color='#CECECE')
 ax[1].set_xlim(0,len(full_time)-1)
@@ -215,6 +226,7 @@ ax[1].ticklabel_format(useOffset=False)
 #sets xaxis labels to be normal
 ax[1].xaxis.set_major_locator(loc)
 ax[1].set_xticklabels(labels,rotation='90')
+ax[1].legend(prop={'size':20})
 
 ax[1].set_xlim(0,len(full_time)-1)
 ax[1].grid()
